@@ -1,72 +1,60 @@
-import java.util.HashMap;
+
 import java.util.Scanner;
-import java.util.UUID;
 
 public class Main {
 
     public static void main(String[] args) {
-        try (Scanner input = new Scanner(System.in)){
-        HashMap<String, User> users = new HashMap<>();
-        
-        String passwordConfirm;
-        boolean loggedin = true;
-        boolean backToReg = false;
-        String loginConfirm;
-        boolean repeat = false;
-        User user;
+        try (Scanner input = new Scanner(System.in)) {
+            User user = null;
+            String userAnswer;
+            boolean quitProgramm = false;
+            UserRepository userRepository = new UserRepository();
+            UserService userService = new UserService();
+            boolean successfullyLogged = false;
+            boolean rightPassword = false;
 
-        System.out.println("Welcome in our bank, u have to register ur account");
-         while(!repeat) { while (!backToReg){System.out.println("Make a username");
-        String id = UUID.randomUUID().toString();
-        String username = input.nextLine();
+            System.out.println("Welcome in our bank, u have to login");
 
-        System.out.println("Create a login");
-        String login = input.nextLine();
+            while (!successfullyLogged) {
+                System.out.println("Write ur login");
+                String loginConfirm = input.nextLine();
+                if ((!userRepository.containsLogin(loginConfirm))) {
+                    System.out.println("Login is wrong, try one more time");
+                }
+                if (userRepository.containsLogin(loginConfirm)) {
+                    successfullyLogged = true;
+                    while (!rightPassword) {
+                        System.out.println("Write ur password");
+                        String passwordConfirm = input.nextLine();
+                        user = userRepository.getByLogin(loginConfirm);
 
-        
-        System.out.println("Create ur password");
-        String password = input.nextLine();
+                        if (userService.login(user, passwordConfirm)) {
+                            System.out.println("Successfully logged in");
+                            rightPassword = true;
+                        } else if (!userService.login(user, passwordConfirm)) {
+                            System.out.println("Password is wrong. Try one more time");
+                        }
+                    }
+                    while (!quitProgramm) {
+                        System.out.println("What you want now? U can write 'quit' to exit or 'possible commands' to see possible commands");
+                        userAnswer = input.nextLine();
+                        if (userAnswer.equalsIgnoreCase("balance")) {
+                            System.out.println("Your balance is " + user.getAmount());
+                        } else if (userAnswer.equalsIgnoreCase("ID")) {
+                            System.out.println("Your UUID is " + user.getId());
+                        } else if (userAnswer.equalsIgnoreCase("possible commands")) {
+                            System.out.println("Write 'transaction' to make a transaction, 'balance' to check ur balance or ID to see ur ID.");
+                        } else if (userAnswer.equalsIgnoreCase("quit")) {
+                            quitProgramm = true;
+                        } else if (userAnswer.equalsIgnoreCase("transaction")){
+                            System.out.println("Write ID of the reciever");
+                            String recieverVerification = input.nextLine();
+                        }
+                    }
 
-        System.out.println("Great! ur account created and there is ur unique ID: " + id);
+                }
 
-        User newUser = new User(username, login, password, id);
-        users.put(login, newUser);
-        System.out.println("Do u want to login into ur account? Print 'Yes' to back to registration or 'no' to login");
-        String toReg = input.nextLine();
-        if  (toReg.equalsIgnoreCase("no")){
-            backToReg = true;
-        } if (toReg.equalsIgnoreCase("Yes")){
-            backToReg = false;
-        }
-        
-    }
-    System.out.println("Now login into ur account");
-       while(loggedin){ System.out.println("Write ur login");
-        loginConfirm = input.nextLine();
-        if (!users.containsKey(loginConfirm)){
-            System.out.println("Login is wrong, try one more time");
-        }        
-        if (users.containsKey(loginConfirm)) {
-            System.out.println("And ur password");
-            passwordConfirm = input.nextLine();
-            user = users.get(loginConfirm);
-        
-        if (user.getPassword().equals(passwordConfirm)) {
-            System.out.println("Successfully logged in");
-            System.out.println("Do u want to finish? Yes - end. no - create new accout. quit - finish");
-            String userAnswer = input.nextLine();
-            if (userAnswer.equalsIgnoreCase("no")){
-                loggedin = false;
-                repeat = false;
-            } else if (userAnswer.equalsIgnoreCase("quit")){
-                break;
             }
-
-        } else if (!user.getPassword().equals(passwordConfirm)) {
-            System.out.println("Wrong password. Try one more time");
-
-            }    } } 
         }
     }
-}
 }
